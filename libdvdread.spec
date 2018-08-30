@@ -1,16 +1,21 @@
 Name:           libdvdread
-Version:        5.0.3
-Release:        2%{?dist}
+Version:        6.0.0
+Release:        1%{?dist}
 Summary:        A library for reading DVD video discs based on Ogle code
 License:        GPLv2+
 URL:            http://dvdnav.mplayerhq.hu/
-
-Source0:        https://download.videolan.org/pub/videolan/%{name}/%{version}/%{name}-%{version}.tar.bz2
+Source0:        https://download.videolan.org/pub/videolan/libdvdread/%{version}/libdvdread-%{version}.tar.bz2
+Source1:        https://download.videolan.org/pub/videolan/libdvdread/%{version}/libdvdread-%{version}.tar.bz2.asc
+Source2:        https://download.videolan.org/pub/keys/7180713BE58D1ADC.asc
+# https://github.com/HandBrake/HandBrake/issues/535
+Patch0:         https://raw.githubusercontent.com/HandBrake/HandBrake/master/contrib/libdvdread/A01-UDFReadBlocks-errors.patch
+BuildRequires:  gcc
+BuildRequires:  gnupg2
 Provides:       bundled(md5-gcc)
 
 %description
-%{name} provides a simple foundation for reading DVD video disks. It provides
-the functionality that is required to access many DVDs.
+libdvdread provides a simple foundation for reading DVD video disks.
+It provides the functionality that is required to access many DVDs.
 
 %package        devel
 Summary:        Development files for libdvdread
@@ -18,13 +23,16 @@ Requires:       %{name} = %{version}-%{release}
 Requires:       pkgconfig
 
 %description    devel
-%{name} provides a simple foundation for reading DVD video disks. It provides
-the functionality that is required to access many DVDs.
+libdvdread provides a simple foundation for reading DVD video disks.
+It provides the functionality that is required to access many DVDs.
 
-This package contains development files for %{name}.
+This package contains development files for libdvdread.
 
 %prep
+gpg2 --import --import-options import-export,import-minimal %{S:2} > ./gpg-keyring.gpg
+gpgv2 --keyring ./gpg-keyring.gpg %{S:1} %{S:0}
 %setup -q
+%patch0 -p1
 
 %build
 %configure --disable-static
@@ -32,34 +40,58 @@ This package contains development files for %{name}.
 make V=1 %{?_smp_mflags}
 
 %install
-%make_install
-rm -fr %{buildroot}%{_docdir}/%{name}
-find %{buildroot} -name "*.la" -delete
+%make_install DESTDIR=%{buildroot}
+rm %{buildroot}%{_libdir}/libdvdread.la %{buildroot}%{_pkgdocdir}/COPYING
 
-%post -p /sbin/ldconfig
-
-%postun -p /sbin/ldconfig
+%ldconfig_scriptlets
 
 %files
-%{!?_licensedir:%global license %%doc}
 %license COPYING
 %doc AUTHORS NEWS README
-%{_libdir}/%{name}.so.*
+%{_libdir}/libdvdread.so.*
 
 %files devel
-%doc ChangeLog TODO
+%doc %{_pkgdocdir}/ChangeLog
+%doc %{_pkgdocdir}/TODO
 %{_includedir}/dvdread
-%{_libdir}/%{name}.so
+%{_libdir}/libdvdread.so
 %{_libdir}/pkgconfig/dvdread.pc
 
 %changelog
-* Tue Dec 15 2015 Simone Caronni <negativo17@gmail.com> - 5.0.3-2
-- Let rpmbuild pick up automatically the documentation.
+* Mon Jul 23 2018 Dominik Mierzejewski <rpm@greysector.net> 6.0.0-1
+- update to 6.0.0
+- add BR: gcc for https://fedoraproject.org/wiki/Changes/Remove_GCC_from_BuildRoot
+- verify tarball GPG signature
+- use modern macros
+- drop redundant defattr
+- simplify docs handling in main package
 
-* Sat Oct 31 2015 Simone Caronni <negativo17@gmail.com> - 5.0.3-1
-- Update to 5.0.3.
-- Clean up SPEC file.
-- Add license macro.
+* Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 5.0.3-9
+- Escape macros in %%changelog
+
+* Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.3-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
+* Sat Aug 12 2017 Ville Skyttä <ville.skytta@iki.fi> - 5.0.3-7
+- Own package doc dir, install COPYING as %%license
+
+* Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.3-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
+
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.3-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
+* Sun Feb 12 2017 Dominik Mierzejewski <rpm@greysector.net> 5.0.3-4
+- fix hanging on scanning title (patch by John Stebbins)
+
+* Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Thu Nov 12 2015 Dominik Mierzejewski <rpm@greysector.net> 5.0.3-1
+- update to 5.0.3
 
 * Mon Jul 27 2015 Frantisek Kluknavsky <fkluknav@redhat.com> - 5.0.2-3
 - package documentation properly
@@ -207,7 +239,7 @@ find %{buildroot} -name "*.la" -delete
 * Thu May  2 2002 Matthias Saou <matthias.saou@est.une.marmotte.net>
 - Back to using libdvdcss 1.1.1, now it's all merged and fine.
 - Rebuilt against Red Hat Linux 7.3.
-- Added the %{?_smp_mflags} expansion.
+- Added the %%{?_smp_mflags} expansion.
 
 * Sat Jan 12 2002 Matthias Saou <matthias.saou@est.une.marmotte.net>
 - Reverted back to using libdvdcss 0.0.3.ogle3 since it works MUCH better
