@@ -36,7 +36,8 @@ make V=1 %{?_smp_mflags}
 
 %install
 %make_install DESTDIR=%{buildroot}
-rm %{buildroot}%{_libdir}/libdvdread.la %{buildroot}%{_pkgdocdir}/COPYING
+rm %{buildroot}%{_libdir}/libdvdread.la
+rm -fr %{buildroot}%{_docdir}/%{name}
 
 %ldconfig_scriptlets
 
@@ -46,8 +47,7 @@ rm %{buildroot}%{_libdir}/libdvdread.la %{buildroot}%{_pkgdocdir}/COPYING
 %{_libdir}/libdvdread.so.*
 
 %files devel
-%doc %{_pkgdocdir}/ChangeLog
-%doc %{_pkgdocdir}/TODO
+%doc ChangeLog TODO
 %{_includedir}/dvdread
 %{_libdir}/libdvdread.so
 %{_libdir}/pkgconfig/dvdread.pc
@@ -55,6 +55,7 @@ rm %{buildroot}%{_libdir}/libdvdread.la %{buildroot}%{_pkgdocdir}/COPYING
 %changelog
 * Thu Aug 30 2018 Simone Caronni <negativo17@gmail.com> - 6.0.0-2
 - Do not verify signatures (commands not supported by RHEL 7 gpg2).
+- Let RPM pick up docs.
 
 * Mon Jul 23 2018 Dominik Mierzejewski <rpm@greysector.net> 6.0.0-1
 - update to 6.0.0
