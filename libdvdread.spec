@@ -1,12 +1,12 @@
 Name:           libdvdread
-Version:        6.0.0
-Release:        2%{?dist}
+Version:        6.0.1
+Release:        1%{?dist}
 Summary:        A library for reading DVD video discs based on Ogle code
 License:        GPLv2+
-URL:            http://dvdnav.mplayerhq.hu/
+URL:            https://www.videolan.org/developers/libdvdnav.html
+
 Source0:        https://download.videolan.org/pub/videolan/libdvdread/%{version}/libdvdread-%{version}.tar.bz2
-# https://github.com/HandBrake/HandBrake/issues/535
-Patch0:         https://raw.githubusercontent.com/HandBrake/HandBrake/master/contrib/libdvdread/A01-UDFReadBlocks-errors.patch
+
 BuildRequires:  gcc
 Provides:       bundled(md5-gcc)
 
@@ -15,8 +15,8 @@ libdvdread provides a simple foundation for reading DVD video disks.
 It provides the functionality that is required to access many DVDs.
 
 %package        devel
-Summary:        Development files for libdvdread
-Requires:       %{name} = %{version}-%{release}
+Summary:        Development files for %{name}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       pkgconfig
 
 %description    devel
@@ -26,25 +26,23 @@ It provides the functionality that is required to access many DVDs.
 This package contains development files for libdvdread.
 
 %prep
-%setup -q
-%patch0 -p1
+%autosetup -p1
 
 %build
 %configure --disable-static
-
-make V=1 %{?_smp_mflags}
+%make_build
 
 %install
-%make_install DESTDIR=%{buildroot}
-rm %{buildroot}%{_libdir}/libdvdread.la
-rm -fr %{buildroot}%{_docdir}/%{name}
+%make_install
+rm -fr %{buildroot}%{_libdir}/libdvdread.la %{buildroot}%{_docdir}/%{name}
 
-%ldconfig_scriptlets
+%{?ldconfig_scriptlets}
 
 %files
 %license COPYING
 %doc AUTHORS NEWS README
-%{_libdir}/libdvdread.so.*
+%{_libdir}/libdvdread.so.4
+%{_libdir}/libdvdread.so.4.2.0
 
 %files devel
 %doc ChangeLog TODO
@@ -53,6 +51,10 @@ rm -fr %{buildroot}%{_docdir}/%{name}
 %{_libdir}/pkgconfig/dvdread.pc
 
 %changelog
+* Tue Mar 22 2022 Simone Caronni <negativo17@gmail.com> - 6.0.1-1
+- Update to 6.0.1.
+- Clean up SPEC file.
+
 * Thu Aug 30 2018 Simone Caronni <negativo17@gmail.com> - 6.0.0-2
 - Do not verify signatures (commands not supported by RHEL 7 gpg2).
 - Let RPM pick up docs.
